@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>DotCamera ベンチマーク(限界値計測)</title>
+
+<meta name="description" content="dotcameraで使えるベンチマーク(限界値測定ツール)。ブラウザで動作し、スマホ・PCに対応。">
+
+<link rel= "canonical" href="https://sirogomaazarasi.github.io/azasite/tool/dotcamera/benchmark.html/">
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DK3VQGQTWC"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-DK3VQGQTWC');
+</script>
+
+<style>
+body{background:#111;color:#fff;font-family:sans-serif;padding:20px;}
+canvas{border:1px solid #444;margin-top:10px;}
+#info{white-space:pre;margin-top:10px;}
+button{padding:10px;margin-top:10px;}
+
+.footer{
+  position:fixed;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  width:90%;
+  background:linear-gradient(to right, rgba(0,0,0,0.2), rgba(0,0,0,0.85));
+  backdrop-filter:blur(10px);
+  border-radius:12px;
+  padding:10px;
+  text-align:center;
+  font-size:13px;
+  border:1px solid rgba(255,255,255,0.15);
+  box-shadow:0 5px 20px rgba(0,0,0,0.3);
+  z-index:999;
+}
+
+.footer a{
+  color:#66ccff;
+  text-decoration:none;
+  font-weight:600;
+}
+
+.footer a:hover{
+  text-decoration:underline;
+}
+
+.footer .copyright{
+  font-size:13px;
+  font-weight:500;
+  background:linear-gradient(90deg,#ffffff,#bbbbbb);
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+  -webkit-text-fill-color:transparent;
+  letter-spacing:0.3px;
+  text-shadow:0 1px 2px rgba(0,0,0,0.6);
+}
+
+</style>
+</head>
+<body>
+
+<h2>DotCamera ベンチマーク(限界値計測)</h2>
+
+<h3>本ツールの測定結果はあくまで目安であり、動作や性能を保証するものではありません。<br>
+ご利用の環境や状況により、実際の結果と異なる場合があります。<br>
+本ツールの内容の正確性・完全性については保証いたしかねます。<br>
+また、本ツールの利用により発生したいかなる損害・不利益についても、一切の責任を負いません。</h3>
+
+<canvas id="cv" width="300" height="300"></canvas><br>
+<button onclick="start()">開始</button>
+
+<div id="info"></div>
+
+<div class="footer">
+  <a href="index.html">← dotcamera戻る</a><br>
+  <div class="copyright">
+    Copyright © 2026 SirogomaAZARASI All Rights Reserved.
+  </div>
+</div>
+
+<script>
+const cv=document.getElementById("cv");
+const ctx=cv.getContext("2d");
+
+let dot=32;
+let color=32;
+
+let trials=0;
+let success=0;
+
+let stage="dot";
+let best={dot:0,color:0};
+
+let failStreak=0;
+
+function draw(){
+  let cell=300/dot;
+
+  for(let y=0;y<dot;y++){
+    for(let x=0;x<dot;x++){
+      let c=(x*7+y*5)%color;
+      ctx.fillStyle=`hsl(${(c/color)*360},100%,50%)`;
+      ctx.fillRect(x*cell,y*cell,cell,cell);
+    }
+  }
+}
+
+function loop(){
+  draw();
+
+  let start=performance.now();
+  for(let i=0;i<1200000;i++){}
+  let t=performance.now()-start;
+
+  trials++;
+  if(t<16.5) success++;
+
+  document.getElementById("info").innerText=
+`stage: ${stage}
+dot: ${dot}
+color: ${color}
+success: ${success}/${trials}
+failStreak: ${failStreak}`;
+
+  if(trials>=12){
+    let rate=success/trials;
+
+    if(rate>0.75){
+      failStreak=0;
+
+      best={dot,color};
+
+      if(stage==="dot"){
+        dot=Math.min(512,Math.floor(dot*1.5));
+      }else{
+        color=Math.min(256,Math.floor(color*1.4));
+      }
+
+    }else{
+      failStreak++;
+
+      if(failStreak>=3){
+        // ★高性能PCで止まる問題対策
+        if(stage==="dot"){
+          dot=Math.max(16,Math.floor(dot*0.85));
+        }else{
+          color=Math.max(4,Math.floor(color*0.85));
+        }
+        failStreak=0;
+      }else{
+        if(stage==="dot"){
+          dot=Math.max(8,Math.floor(dot*0.6));
+          stage="color";
+        }else{
+          color=Math.max(2,Math.floor(color*0.6));
+        }
+      }
+    }
+
+    trials=0;
+    success=0;
+
+    // 強制遷移（安全装置）
+    if(stage==="dot" && dot>=512){
+      stage="color";
+      dot=best.dot;
+    }
+
+    if(stage==="color" && color>=256){
+      finish();
+      return;
+    }
+  }
+
+  requestAnimationFrame(loop);
+}
+
+function finish(){
+  document.getElementById("info").innerText=
+`=== 最大値 ===
+dot: ${best.dot}
+color: ${best.color}`;
+}
+
+function start(){
+  dot=32;
+  color=32;
+  trials=0;
+  success=0;
+  failStreak=0;
+  stage="dot";
+  loop();
+}
+</script>
+
+</body>
+</html>
