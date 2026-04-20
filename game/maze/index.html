@@ -4,16 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>迷路ゲーム | AZAgame</title>
-<meta name="description" content="AZAgameの迷路ゲーム。ランダム生成の迷路を攻略しよう。スマホでも快適に遊べる無料ブラウザゲーム。">
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-DK3VQGQTWC"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+<meta name="description" content="AZAgameの迷路ゲーム。スマホ・PC対応の無料ブラウザゲーム。">
 
-  gtag('config', 'G-DK3VQGQTWC');
-</script>
 <style>
 html, body {
   margin: 0;
@@ -26,42 +18,6 @@ body {
   background: linear-gradient(135deg, #1e1e2f, #2a2a40);
   color: #fff;
   padding-bottom: calc(140px + env(safe-area-inset-bottom));
-  touch-action: manipulation;
-}
-
-/* ===== ガラスUI ===== */
-.glass {
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.15);
-}
-
-/* フッター */
-.footer-glass {
-  position: fixed;
-  bottom: calc(10px + env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  padding: 10px;
-
-  background: linear-gradient(to right, rgba(0,0,0,0.2), rgba(0,0,0,0.85));
-  backdrop-filter: blur(10px);
-
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.15);
-}
-
-/* タイマー */
-#timer {
-  font-size: 20px;
-  margin-top: 10px;
-}
-
-/* サイズ */
-#sizeUI {
-  margin-top: 10px;
 }
 
 /* 迷路 */
@@ -77,19 +33,16 @@ td {
 }
 
 .wall { background: #bbb; }
-.player { background: #00c6ff; box-shadow:0 0 6px #00c6ff;}
+.player { background: #00c6ff; }
 .goal { background: gold; }
 
-/* ===== ジョイスティック ===== */
+/* ジョイスティック */
 #joystick {
   width: 120px;
   height: 120px;
   margin: 20px auto;
   border-radius: 50%;
-
   background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(10px);
-
   position: relative;
   touch-action: none;
 }
@@ -104,13 +57,12 @@ td {
   left: 35px;
 }
 
-/* ボタン */
 button {
   padding: 10px;
   border-radius: 10px;
   border: none;
-  color: #fff;
   background: #2d2d44;
+  color: white;
 }
 
 /* クリア */
@@ -124,8 +76,6 @@ button {
   align-items: center;
   justify-content: center;
   background: rgba(0,0,0,0.7);
-  z-index: 999;
-  font-size: 28px;
   flex-direction: column;
 }
 </style>
@@ -134,11 +84,9 @@ button {
 <body>
 
 <h1>迷路ゲーム</h1>
-
 <div id="timer">0.0 秒</div>
 
 <div id="sizeUI">
-  サイズ：
   <button onclick="startGame(31)">小</button>
   <button onclick="startGame(61)">中</button>
   <button onclick="startGame(101)">大</button>
@@ -146,67 +94,56 @@ button {
 
 <table id="maze"></table>
 
-<!-- ジョイスティック -->
 <div id="joystick"></div>
 
-<!-- リスタート -->
 <button id="restartButton">リスタート</button>
 
-<!-- クリア -->
 <div id="clearScreen">
   <div id="clearText"></div>
   <button onclick="closeClear()">OK</button>
 </div>
 
-<!-- フッター -->
-<div class="footer-glass">
-  <a href="index.html" style="color:#66ccff;">← ツール一覧に戻る</a><br>
-  Copyright © 2026 SirogomaAZARASI
-</div>
-
 <script>
-let size = 61;
-let maze = [];
-let playerX = 1, playerY = 1;
-let startTime = 0;
-let timerInterval;
+let size=61, maze=[], playerX=1, playerY=1;
+let startTime=0, timerInterval;
 
-/* ===== スクロール＆拡大防止 ===== */
-document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+/* ===== スクロール制御 ===== */
+/* 1本指は防止、2本指は許可 */
+document.addEventListener('touchmove', function(e){
+  if (e.touches.length === 1) {
+    e.preventDefault();
+  }
+}, { passive:false });
 
-let lastTouchEnd = 0;
-document.addEventListener('touchend', e => {
-  const now = Date.now();
-  if (now - lastTouchEnd <= 300) e.preventDefault();
-  lastTouchEnd = now;
+/* ダブルタップ防止 */
+let lastTouchEnd=0;
+document.addEventListener('touchend', function(e){
+  const now=Date.now();
+  if(now-lastTouchEnd<=300) e.preventDefault();
+  lastTouchEnd=now;
 }, false);
 
-/* ===== ゲーム開始 ===== */
-function startGame(s) {
-  size = s;
-  document.getElementById("sizeUI").style.display = "none";
-  playerX = 1;
-  playerY = 1;
-
+/* ===== ゲーム ===== */
+function startGame(s){
+  size=s;
+  document.getElementById("sizeUI").style.display="none";
+  playerX=1; playerY=1;
   generateMaze();
   drawMaze();
   startTimer();
 }
 
-/* タイマー */
-function startTimer() {
+function startTimer(){
   clearInterval(timerInterval);
-  startTime = Date.now();
-  timerInterval = setInterval(() => {
-    const t = ((Date.now() - startTime)/1000).toFixed(1);
-    document.getElementById("timer").textContent = t + " 秒";
-  }, 100);
+  startTime=Date.now();
+  timerInterval=setInterval(()=>{
+    const t=((Date.now()-startTime)/1000).toFixed(1);
+    timer.textContent=t+" 秒";
+  },100);
 }
 
-/* 迷路生成 */
-function generateMaze() {
-  maze = Array(size).fill().map(()=>Array(size).fill(1));
-
+function generateMaze(){
+  maze=Array(size).fill().map(()=>Array(size).fill(1));
   function carve(x,y){
     maze[y][x]=0;
     [[0,-2],[0,2],[-2,0],[2,0]].sort(()=>Math.random()-0.5)
@@ -218,14 +155,12 @@ function generateMaze() {
       }
     });
   }
-
   carve(1,1);
   maze[size-2][size-2]=2;
 }
 
-/* 描画 */
-function drawMaze() {
-  const table=document.getElementById("maze");
+function drawMaze(){
+  const table=mazeEl;
   table.innerHTML="";
   for(let y=0;y<size;y++){
     const row=document.createElement("tr");
@@ -240,13 +175,11 @@ function drawMaze() {
   }
 }
 
-/* 移動 */
 function move(dx,dy){
   const nx=playerX+dx, ny=playerY+dy;
   if(nx>=0&&ny>=0&&nx<size&&ny<size&&maze[ny][nx]!==1){
     playerX=nx; playerY=ny;
     drawMaze();
-
     if(maze[ny][nx]===2){
       clearInterval(timerInterval);
       showClear();
@@ -254,81 +187,90 @@ function move(dx,dy){
   }
 }
 
-/* クリア */
+/* ===== クリア ===== */
 function showClear(){
-  const time=document.getElementById("timer").textContent;
-  document.getElementById("clearText").textContent="クリア！ "+time;
-  document.getElementById("clearScreen").style.display="flex";
+  clearText.textContent="クリア！ "+timer.textContent;
+  clearScreen.style.display="flex";
 }
-
 function closeClear(){
-  document.getElementById("clearScreen").style.display="none";
+  clearScreen.style.display="none";
 }
 
 /* ===== ジョイスティック ===== */
-const joystick = document.getElementById("joystick");
-const stick = document.createElement("div");
-stick.id = "stick";
+const joystick=document.getElementById("joystick");
+const stick=document.createElement("div");
+stick.id="stick";
 joystick.appendChild(stick);
 
-let joyActive = false;
+let joy=false;
 
-joystick.addEventListener("touchstart", () => joyActive = true);
-
-joystick.addEventListener("touchend", () => {
-  joyActive = false;
-  stick.style.left = "35px";
-  stick.style.top = "35px";
+joystick.addEventListener("touchstart",()=>joy=true);
+joystick.addEventListener("touchend",()=>{
+  joy=false;
+  stick.style.left="35px";
+  stick.style.top="35px";
 });
 
-joystick.addEventListener("touchmove", (e) => {
-  if (!joyActive) return;
+joystick.addEventListener("touchmove",(e)=>{
+  if(!joy) return;
+  const rect=joystick.getBoundingClientRect();
+  const x=e.touches[0].clientX-rect.left-60;
+  const y=e.touches[0].clientY-rect.top-60;
 
-  const rect = joystick.getBoundingClientRect();
-  const x = e.touches[0].clientX - rect.left - 60;
-  const y = e.touches[0].clientY - rect.top - 60;
+  const dx=Math.max(-40,Math.min(40,x));
+  const dy=Math.max(-40,Math.min(40,y));
 
-  const dx = Math.max(-40, Math.min(40, x));
-  const dy = Math.max(-40, Math.min(40, y));
+  stick.style.left=(dx+35)+"px";
+  stick.style.top=(dy+35)+"px";
 
-  stick.style.left = (dx + 35) + "px";
-  stick.style.top = (dy + 35) + "px";
-
-  if (Math.abs(dx) > Math.abs(dy)) {
-    if (dx > 15) move(1,0);
-    if (dx < -15) move(-1,0);
-  } else {
-    if (dy > 15) move(0,1);
-    if (dy < -15) move(0,-1);
+  if(Math.abs(dx)>Math.abs(dy)){
+    if(dx>15) move(1,0);
+    if(dx<-15) move(-1,0);
+  }else{
+    if(dy>15) move(0,1);
+    if(dy<-15) move(0,-1);
   }
 });
 
-/* ===== キーボード（PC） ===== */
+/* ===== キーボード ===== */
 let keyInterval;
+document.addEventListener("keydown",e=>{
+  if(keyInterval) return;
 
-document.addEventListener("keydown", e => {
-  if (keyInterval) return;
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)){
+    e.preventDefault(); // ←スクロール防止
+  }
 
-  keyInterval = setInterval(() => {
-    if (e.key === "ArrowUp") move(0,-1);
-    if (e.key === "ArrowDown") move(0,1);
-    if (e.key === "ArrowLeft") move(-1,0);
-    if (e.key === "ArrowRight") move(1,0);
-  }, 80);
+  keyInterval=setInterval(()=>{
+    if(e.key==="ArrowUp") move(0,-1);
+    if(e.key==="ArrowDown") move(0,1);
+    if(e.key==="ArrowLeft") move(-1,0);
+    if(e.key==="ArrowRight") move(1,0);
+  },80);
 });
 
-document.addEventListener("keyup", () => {
+document.addEventListener("keyup",()=>{
   clearInterval(keyInterval);
-  keyInterval = null;
+  keyInterval=null;
 });
 
-/* リスタート */
-document.getElementById("restartButton").onclick=()=>{
-  document.getElementById("sizeUI").style.display="block";
-  document.getElementById("maze").innerHTML="";
-  clearInterval(timerInterval);
-  document.getElementById("timer").textContent="0.0 秒";
+/* ===== リスタート確認 ===== */
+restartButton.onclick=()=>{
+  if(confirm("リスタートしますか？")) {
+    sizeUI.style.display="block";
+    mazeEl.innerHTML="";
+    clearInterval(timerInterval);
+    timer.textContent="0.0 秒";
+  }
 };
+
+/* ===== 要素取得 ===== */
+const mazeEl=document.getElementById("maze");
+const timer=document.getElementById("timer");
+const clearText=document.getElementById("clearText");
+const clearScreen=document.getElementById("clearScreen");
+const sizeUI=document.getElementById("sizeUI");
+const restartButton=document.getElementById("restartButton");
 </script>
 
 </body>
