@@ -46,7 +46,7 @@ select, button { font-size: 1em; margin: 5px; padding: 6px 12px; }
   0% { transform: translateY(0); opacity: 1; }
   100% { transform: translateY(120%); opacity: 0; }
 }
-.out-anim { animation: fallDown 0.4s ease forwards; }
+.out-anim { animation: fallDown 0.7s ease forwards; }
 
 /* ルール */
 #ruleModal {
@@ -165,7 +165,7 @@ function showRule() {
     ruleText.textContent = "あざらしを叩いてスコアアップ！赤丸は叩くと減点。サングラスも叩いてOK。";
   }
   if (level == 2) {
-    ruleText.textContent = "サングラスのあざらしだけ叩こう！普通は減点。";
+    ruleText.textContent = "サングラスのあざらしだけ叩こう！普通のあざらしは減点。";
   }
 
   ruleModal.style.display = "flex";
@@ -260,7 +260,7 @@ function handleHit(index) {
   if (img) {
     img.src = "images/out.png";
     img.classList.add('out-anim');
-    setTimeout(() => { hole.innerHTML = ''; }, 400);
+    setTimeout(() => { hole.innerHTML = ''; }, 700);
   } else {
     hole.innerHTML = '';
   }
