@@ -2,17 +2,53 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>モグラ叩き</title>
+<title>モグラ叩き | AZAgame</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="description" content="あざらし叩きゲームブラウザでプレイできます。">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DK3VQGQTWC"></script>
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+gtag('js',new Date());
+gtag('config','G-DK3VQGQTWC');
+</script>
+
 <style>
-body { font-family: sans-serif; text-align: center; margin: 0; background: #f0f0f0; }
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,sans-serif;
+  background:#0f1115;
+  color:#e6e6eb;
+  text-align:center;
+}
+
 h1 { margin-top: 10px; }
-#score, #timer { font-size: 1.2em; margin: 5px; }
+
+#score, #timer {
+  font-size: 1.2em;
+  margin: 5px;
+}
 
 .controls { margin: 10px; }
-select, button { font-size: 1em; margin: 5px; padding: 6px 12px; }
 
-.grid { display: grid; gap: 8px; width: 90vmin; margin: 10px auto; }
+select, button {
+  font-size: 1em;
+  margin: 5px;
+  padding: 6px 12px;
+  background:#171a21;
+  color:#e6e6eb;
+  border:1px solid #2a2f3a;
+  border-radius:6px;
+}
+
+/* ← グリッドは元のまま */
+.grid {
+  display: grid;
+  gap: 8px;
+  width: 90vmin;
+  margin: 10px auto;
+}
 
 .hole {
   background: #ccc;
@@ -58,14 +94,17 @@ select, button { font-size: 1em; margin: 5px; padding: 6px 12px; }
   justify-content: center;
   align-items: center;
 }
+
 #ruleBox {
-  background: white;
+  background:#171a21;
+  color:#e6e6eb;
   padding: 20px;
   border-radius: 10px;
   width: 80%;
   max-width: 400px;
   position: relative;
 }
+
 #closeBtn {
   position: absolute;
   top: 10px;
@@ -73,6 +112,47 @@ select, button { font-size: 1em; margin: 5px; padding: 6px 12px; }
   font-size: 20px;
   cursor: pointer;
 }
+
+.footer{
+  position:fixed;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  width:90%;
+  background:linear-gradient(to right, rgba(0,0,0,0.2), rgba(0,0,0,0.85));
+  backdrop-filter:blur(10px);
+  border-radius:12px;
+  padding:10px;
+  text-align:center;
+  font-size:13px;
+  border:1px solid rgba(255,255,255,0.15);
+  box-shadow:0 5px 20px rgba(0,0,0,0.3);
+  z-index:999;
+}
+
+.footer a{
+  color:#66ccff;
+  text-decoration:none;
+  font-weight:600;
+}
+
+.footer a:hover{
+  text-decoration:underline;
+}
+
+.footer .copyright{
+  font-size:13px;
+  font-weight:500;
+  background:linear-gradient(90deg,#ffffff,#bbbbbb);
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+  -webkit-text-fill-color:transparent;
+  letter-spacing:0.3px;
+  text-shadow:0 1px 2px rgba(0,0,0,0.6);
+}
+body{padding-bottom:80px;}
+
 </style>
 </head>
 
@@ -87,9 +167,16 @@ select, button { font-size: 1em; margin: 5px; padding: 6px 12px; }
   </select>
 
   <select id="size">
-    <option value="3">3×3</option>
-    <option value="4">4×4</option>
-    <option value="5">5×5</option>
+	<option value="1">1×1</option>
+	<option value="2">2×2</option>
+  	<option value="3">3×3</option>
+   <option value="4">4×4</option>
+   <option value="5">5×5</option>
+	<option value="6">6×6</option>
+	<option value="7">7×7</option>
+	<option value="8">8×8</option>
+	<option value="9">9×9</option>
+	<option value="10">10×10</option>
   </select>
 
   <button onclick="startGame()">スタート</button>
@@ -106,6 +193,13 @@ select, button { font-size: 1em; margin: 5px; padding: 6px 12px; }
     <div id="closeBtn" onclick="closeRule()">×</div>
     <h2>ルール説明</h2>
     <p id="ruleText"></p>
+  </div>
+</div>
+
+<div class="footer">
+  <a href="../">← ゲーム一覧に戻る</a><br>
+  <div class="copyright">
+    Copyright © 2026 SirogomaAZARASI All Rights Reserved.
   </div>
 </div>
 
@@ -137,7 +231,7 @@ const hitSound = document.getElementById('hitSound');
 const missSound = document.getElementById('missSound');
 const endSound = document.getElementById('endSound');
 
-/* ===== グリッド ===== */
+/* グリッド */
 function createGrid() {
   grid.innerHTML = "";
   const size = parseInt(sizeSelect.value);
@@ -157,15 +251,15 @@ function createGrid() {
   }
 }
 
-/* ===== ルール ===== */
+/* ルール */
 function showRule() {
   const level = levelSelect.value;
 
   if (level == 1) {
-    ruleText.textContent = "あざらしを叩いてスコアアップ！赤丸は叩くと減点。サングラスも叩いてOK。";
+    ruleText.textContent = "あざらしを叩いてスコアアップ！赤丸は減点。";
   }
   if (level == 2) {
-    ruleText.textContent = "サングラスのあざらしだけ叩こう！普通のあざらしは減点。";
+    ruleText.textContent = "サングラスだけ叩こう！普通は減点。";
   }
 
   ruleModal.style.display = "flex";
@@ -176,7 +270,7 @@ function closeRule() {
   startMainGame();
 }
 
-/* ===== 画像 ===== */
+/* 画像 */
 function getSealImage() {
   return "images/" + (Math.floor(Math.random()*5)+1) + ".png";
 }
@@ -184,7 +278,7 @@ function getSunImage() {
   return "images/sun" + (Math.floor(Math.random()*2)+1) + ".png";
 }
 
-/* ===== 出現 ===== */
+/* 出現 */
 function showMole() {
   if (current !== null) holes[current].innerHTML = '';
 
@@ -222,11 +316,10 @@ function showMole() {
 
   holes[index].appendChild(element);
   current = index;
-
   currentType = (type === "glasses_as_seal") ? "seal" : type;
 }
 
-/* ===== 叩く ===== */
+/* 叩く */
 function handleHit(index) {
   if (index !== current) return;
 
@@ -246,7 +339,6 @@ function handleHit(index) {
 
   scoreDisplay.textContent = 'スコア: ' + score;
 
-  // 音
   if (correct) {
     hitSound.currentTime = 0;
     hitSound.play();
@@ -255,7 +347,6 @@ function handleHit(index) {
     missSound.play();
   }
 
-  // アニメ
   const img = hole.querySelector('img');
   if (img) {
     img.src = "images/out.png";
@@ -268,7 +359,7 @@ function handleHit(index) {
   current = null;
 }
 
-/* ===== 開始 ===== */
+/* 開始 */
 function startGame() {
   clearInterval(moleInterval);
   clearInterval(timerInterval);
