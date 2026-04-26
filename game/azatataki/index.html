@@ -5,8 +5,7 @@
 <title>あざらし叩き | AZAgame</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="description" content="あざらし叩きゲームブラウザでプレイできます。">
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-DK3VQGQTWC"></script>
+<meta name="description" content="あざらし叩きゲームブラウザでプレイできます。"><script async src="https://www.googletagmanager.com/gtag/js?id=G-DK3VQGQTWC"></script>
 <script>
 window.dataLayer=window.dataLayer||[];
 function gtag(){dataLayer.push(arguments);}
@@ -23,26 +22,6 @@ body{
   text-align:center;
 }
 
-h1 { margin-top: 10px; }
-
-#score, #timer {
-  font-size: 1.2em;
-  margin: 5px;
-}
-
-.controls { margin: 10px; }
-
-select, button {
-  font-size: 1em;
-  margin: 5px;
-  padding: 6px 12px;
-  background:#171a21;
-  color:#e6e6eb;
-  border:1px solid #2a2f3a;
-  border-radius:6px;
-}
-
-/* ← グリッドは元のまま */
 .grid {
   display: grid;
   gap: 8px;
@@ -77,82 +56,24 @@ select, button {
   left: 20%;
 }
 
-/* 落下 */
 @keyframes fallDown {
   0% { transform: translateY(0); opacity: 1; }
   100% { transform: translateY(120%); opacity: 0; }
 }
-.out-anim { animation: fallDown 1.6s ease forwards; }
 
-/* ルール */
-#ruleModal {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6);
-  display: none;
-  justify-content: center;
-  align-items: center;
+.out-anim {
+  animation: fallDown 1.6s ease forwards;
 }
 
-#ruleBox {
-  background:#171a21;
-  color:#e6e6eb;
-  padding: 20px;
-  border-radius: 10px;
-  width: 80%;
-  max-width: 400px;
-  position: relative;
+.hit-anim {
+  animation: pop 0.15s ease;
 }
 
-#closeBtn {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 20px;
-  cursor: pointer;
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
-
-.footer{
-  position:fixed;
-  bottom:10px;
-  left:50%;
-  transform:translateX(-50%);
-  width:90%;
-  background:linear-gradient(to right, rgba(0,0,0,0.2), rgba(0,0,0,0.85));
-  backdrop-filter:blur(10px);
-  border-radius:12px;
-  padding:10px;
-  text-align:center;
-  font-size:13px;
-  border:1px solid rgba(255,255,255,0.15);
-  box-shadow:0 5px 20px rgba(0,0,0,0.3);
-  z-index:999;
-}
-
-.footer a{
-  color:#66ccff;
-  text-decoration:none;
-  font-weight:600;
-}
-
-.footer a:hover{
-  text-decoration:underline;
-}
-
-.footer .copyright{
-  font-size:13px;
-  font-weight:500;
-  background:linear-gradient(90deg,#ffffff,#bbbbbb);
-  background-clip:text;
-  -webkit-background-clip:text;
-  color:transparent;
-  -webkit-text-fill-color:transparent;
-  letter-spacing:0.3px;
-  text-shadow:0 1px 2px rgba(0,0,0,0.6);
-}
-body{padding-bottom:80px;}
-
 </style>
 </head>
 
@@ -160,53 +81,24 @@ body{padding-bottom:80px;}
 
 <h1>あざらし叩き</h1>
 
-<div class="controls">
-  <select id="level">
-    <option value="1">レベル1</option>
-    <option value="2">レベル2</option>
-  </select>
+<select id="level">
+  <option value="1">レベル1</option>
+  <option value="2">レベル2</option>
+</select>
 
-  <select id="size">
-	<option value="1">1×1</option>
-	<option value="2">2×2</option>
-  	<option value="3">3×3</option>
-   <option value="4">4×4</option>
-   <option value="5">5×5</option>
-	<option value="6">6×6</option>
-	<option value="7">7×7</option>
-	<option value="8">8×8</option>
-	<option value="9">9×9</option>
-	<option value="10">10×10</option>
-  </select>
+<select id="size">
+  <option value="3">3×3</option>
+  <option value="4">4×4</option>
+  <option value="5">5×5</option>
+  <option value="6">6×6</option>
+</select>
 
-  <button onclick="startGame()">スタート</button>
-</div>
+<button onclick="startGame()">スタート</button>
 
 <div id="score">スコア: 0</div>
 <div id="timer">残り時間: 30秒</div>
 
 <div class="grid" id="grid"></div>
-
-<!-- ルール -->
-<div id="ruleModal">
-  <div id="ruleBox">
-    <div id="closeBtn" onclick="closeRule()">×</div>
-    <h2>ルール説明</h2>
-    <p id="ruleText"></p>
-  </div>
-</div>
-
-<div class="footer">
-  <a href="../">← ゲーム一覧に戻る</a><br>
-  <div class="copyright">
-    Copyright © 2026 SirogomaAZARASI All Rights Reserved.
-  </div>
-</div>
-
-<!-- 効果音 -->
-<audio id="hitSound" src="sounds/hit.mp3"></audio>
-<audio id="missSound" src="sounds/miss.mp3"></audio>
-<audio id="endSound" src="sounds/end.mp3"></audio>
 
 <script>
 let holes = [];
@@ -218,20 +110,16 @@ let timeLeft = 30;
 let moleInterval = null;
 let timerInterval = null;
 
+/* 追加：バグ防止フラグ */
+let isAnimating = false;
+
 const grid = document.getElementById('grid');
 const levelSelect = document.getElementById('level');
 const sizeSelect = document.getElementById('size');
 
 const scoreDisplay = document.getElementById('score');
 const timerDisplay = document.getElementById('timer');
-const ruleModal = document.getElementById('ruleModal');
-const ruleText = document.getElementById('ruleText');
 
-const hitSound = document.getElementById('hitSound');
-const missSound = document.getElementById('missSound');
-const endSound = document.getElementById('endSound');
-
-/* グリッド */
 function createGrid() {
   grid.innerHTML = "";
   const size = parseInt(sizeSelect.value);
@@ -243,43 +131,25 @@ function createGrid() {
     const div = document.createElement('div');
     div.classList.add('hole');
 
-    div.addEventListener('touchstart', () => handleHit(i), { passive: true });
-    div.addEventListener('click', () => handleHit(i));
+    /* スマホ反応も改善 */
+    div.addEventListener('pointerdown', () => handleHit(i));
 
     grid.appendChild(div);
     holes.push(div);
   }
 }
 
-/* ルール */
-function showRule() {
-  const level = levelSelect.value;
-
-  if (level == 1) {
-    ruleText.textContent = "あざらしを叩いてスコアアップ！赤丸は減点。";
-  }
-  if (level == 2) {
-    ruleText.textContent = "サングラスだけ叩こう！普通は減点。";
-  }
-
-  ruleModal.style.display = "flex";
-}
-
-function closeRule() {
-  ruleModal.style.display = "none";
-  startMainGame();
-}
-
-/* 画像 */
 function getSealImage() {
   return "images/" + (Math.floor(Math.random()*5)+1) + ".png";
 }
+
 function getSunImage() {
   return "images/sun" + (Math.floor(Math.random()*2)+1) + ".png";
 }
 
-/* 出現 */
 function showMole() {
+  if (isAnimating) return; // ← 超重要（競合防止）
+
   if (current !== null) holes[current].innerHTML = '';
 
   const index = Math.floor(Math.random() * holes.length);
@@ -288,15 +158,8 @@ function showMole() {
   let type = "";
 
   if (level == 1) {
-    const r = Math.random();
-    if (r < 0.7) {
-      type = Math.random() < 0.3 ? "glasses_as_seal" : "seal";
-    } else {
-      type = "bad";
-    }
-  }
-
-  if (level == 2) {
+    type = Math.random() < 0.7 ? "seal" : "bad";
+  } else {
     type = Math.random() < 0.5 ? "glasses" : "seal";
   }
 
@@ -308,73 +171,69 @@ function showMole() {
   } else {
     element = document.createElement('img');
     element.classList.add('mole-img');
-
-    if (type === "seal") element.src = getSealImage();
-    if (type === "glasses") element.src = getSunImage();
-    if (type === "glasses_as_seal") element.src = getSunImage();
+    element.src = (type === "seal") ? getSealImage() : getSunImage();
   }
 
   holes[index].appendChild(element);
   current = index;
-  currentType = (type === "glasses_as_seal") ? "seal" : type;
+  currentType = type;
 }
 
-/* 叩く */
 function handleHit(index) {
   if (index !== current) return;
+  if (isAnimating) return;
 
-  const level = levelSelect.value;
+  isAnimating = true;
+
   const hole = holes[current];
+  const img = hole.querySelector('img');
+
   let correct = false;
+  const level = levelSelect.value;
 
   if (level == 1) {
     correct = (currentType === "seal");
     score += correct ? 1 : -2;
-  }
-
-  if (level == 2) {
+  } else {
     correct = (currentType === "glasses");
     score += correct ? 1 : -1;
   }
 
   scoreDisplay.textContent = 'スコア: ' + score;
 
-  if (correct) {
-    hitSound.currentTime = 0;
-    hitSound.play();
-  } else {
-    missSound.currentTime = 0;
-    missSound.play();
-  }
-
-  const img = hole.querySelector('img');
   if (img) {
+    img.classList.add('hit-anim');
     img.src = "images/out.png";
-    img.classList.add('out-anim');
-    setTimeout(() => { hole.innerHTML = ''; }, 1600);
+
+    setTimeout(() => {
+      img.classList.add('out-anim');
+    }, 150);
+
+    setTimeout(() => {
+      hole.innerHTML = '';
+      current = null;
+      isAnimating = false; // ← ここで解除
+    }, 1800);
   } else {
     hole.innerHTML = '';
+    current = null;
+    isAnimating = false;
   }
-
-  current = null;
 }
 
-/* 開始 */
 function startGame() {
   clearInterval(moleInterval);
   clearInterval(timerInterval);
 
   score = 0;
   timeLeft = 30;
+  isAnimating = false;
 
   scoreDisplay.textContent = 'スコア: 0';
   timerDisplay.textContent = '残り時間: 30秒';
 
   createGrid();
-  showRule();
-}
 
-function startMainGame() {
   moleInterval = setInterval(showMole, 800);
 
   timerInterval = setInterval(() => {
@@ -384,8 +243,6 @@ function startMainGame() {
     if (timeLeft <= 0) {
       clearInterval(moleInterval);
       clearInterval(timerInterval);
-
-      endSound.play();
       alert('ゲーム終了！スコア: ' + score);
     }
   }, 1000);
