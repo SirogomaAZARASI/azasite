@@ -82,7 +82,7 @@ select, button {
   0% { transform: translateY(0); opacity: 1; }
   100% { transform: translateY(120%); opacity: 0; }
 }
-.out-anim { animation: fallDown 0.7s ease forwards; }
+.out-anim { animation: fallDown 1s ease forwards; }
 
 /* ルール */
 #ruleModal {
@@ -351,7 +351,7 @@ function handleHit(index) {
   if (img) {
     img.src = "images/out.png";
     img.classList.add('out-anim');
-    setTimeout(() => { hole.innerHTML = ''; }, 700);
+    setTimeout(() => { hole.innerHTML = ''; }, 1000);
   } else {
     hole.innerHTML = '';
   }
